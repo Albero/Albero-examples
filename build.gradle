@@ -1,0 +1,114 @@
+group = 'nl.trivento.albero'
+version = '0.2'
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'jetty'
+
+sourceCompatibility = '1.5'
+targetCompatibility = '1.5'
+
+configurations {
+    published.extendsFrom archives, signatures
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(
+            [group: 'nl.trivento.albero', name: 'albero-common', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-engine', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-model', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-parsers-groovy', version: '0.2', transitive: true],
+            [group: 'nl.trivento.albero', name: 'albero-repositories-database', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-traversal-random', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-web-proxy', version: '0.2'],
+            [group: 'nl.trivento.albero', name: 'albero-web-servlet', version: '0.2'],
+
+    )
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.2'
+
+    runtime group: 'ch.qos.logback', name: 'logback-classic', version: '0.9.30'
+    runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+}
+
+artifacts {
+    archives jar
+}
+
+signing {
+    gradle.taskGraph.whenReady {taskGraph ->
+        if (taskGraph.hasTask(uploadArchives)) {
+            sign configurations.archives
+        }
+    }
+}
+
+uploadArchives {
+    gradle.taskGraph.whenReady {taskGraph ->
+        if (taskGraph.hasTask(uploadArchives)) {
+            repositories.mavenDeployer {
+
+                beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+
+                pom.project {
+                    name 'Albero'
+                    packaging 'war'
+                    description 'Albero is a decision tree technology'
+                    url 'https://github.com/Albero/Albero'
+
+                    scm {
+                        url 'scm:git@github.com:Albero/Albero.git'
+                        connection 'scm:git@github.com:Albero/Albero.git'
+                        developerConnection 'scm:git@github.com:Albero/Albero.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'bergvandenp'
+                            name 'Paul van den Berg'
+                        }
+                    }
+                }
+
+                //mess with the generated pom to set the 'packaging' tag
+                pom.withXml { XmlProvider xmlProvider ->
+                    def xml = xmlProvider.asString()
+                    def pomXml = new XmlParser().parse(new ByteArrayInputStream(xml.toString().bytes))
+
+                    pomXml.version[0] + { packaging('jar') }
+
+                    def newXml = new StringWriter()
+                    def printer = new XmlNodePrinter(new PrintWriter(newXml))
+                    printer.preserveWhitespace = true
+                    printer.print(pomXml)
+                    xml.setLength(0)
+                    xml.append(newXml.toString())
+                }
+            }
+        }
+    }
+}
+
+jettyRun {
+    contextPath = '/'
+}
+
+task createWrapper(type: Wrapper) {
+    jarFile = "${project.projectDir}/gradle-wrapper.jar"
+}
+
