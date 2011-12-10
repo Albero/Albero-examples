@@ -10,20 +10,97 @@
 body {
     background-color: white;
     position: relative;
+    font-family: "Lucida Grande", Geneva, Helvetica, Arial, sans-serif;
+	padding-top:60px;
+}
+
+body, label, p, td, th, li, div, input, option, select, textarea, a, dt, dd, h1, h2, h3, h4, button {
+    color: #333;
+    font-family: "Lucida Grande", Geneva, Helvetica, Arial, sans-serif;
+}
+
+h1 {
+	font-size: 17px;
+	margin: 60px 0 20px;
+}
+
+div.edit, div.delete, div.update, div.cancel, div.create {
+	display: inline;
+}
+div.delete, div.cancel {
+	float: right;
+}
+
+div.inputArea {
+	margin-bottom: 15px;
+}
+
+div.element label {
+    float: none;
+    padding-right: 5px;
+}
+
+div.introduction {
+	margin-bottom: 10px;
+	line-height: 150%;
+}
+
+div.element input[type="text"] {
+	width:300px;
+}
+
+input[type="radio"] {
+    width: auto;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+div.element {
+	margin-bottom:10px;
+}
+
+label {
+	text-align: left;
+}
+
+table td {
+    border-bottom: 1px solid #DDDDDD;
 }
 
 section {
-    padding-top: 60px;
-    min-height: 400px;
+    padding-top: 20px;
+    min-height: 500px;
 }
 
 section > .row {
     margin-bottom: 10px;
 }
 
+.topbar .brand {
+	margin-left: 0;
+}
+
+.content {
+	height: 500px;
+	width: 730px;
+}
+
+.codeInputError {
+	color:red;
+	padding: 9px 0;
+	display: block;
+}
+
+.topbar-inner, .topbar .fill {
+    background-color: #007700;
+    background-image: -moz-linear-gradient(center top , #007700, #007700);
+    box-shadow: 0 1px 13px rgba(0, 0, 0, 0.25), 0 -1px 0 rgba(0, 0, 0, 0.1) inset;
+}
+
 .topbar p {
     color: #bfbfbf;
 }
+
 
 /* Alle links de primary kleur. */
 
@@ -45,7 +122,7 @@ a {
 }
 
 .jumbotron .inner {
-    background: transparent url(../images/grid-18px.png) top center;
+    background: transparent url(../../images/grid-18px.png) top center;
     padding: 40px 0 16px;
     -webkit-box-shadow: inset 0 10px 30px rgba(0, 0, 0, .3);
     -moz-box-shadow: inset 0 10px 30px rgba(0, 0, 0, .3);
@@ -84,7 +161,7 @@ a {
 }
 
 .jumbotron .container {
-    background-image: url(../images/logo_profict.png);
+    background-image: url(../../images/logo-profict-shop.png);
     background-repeat: no-repeat;
     background-position: right top;
     height: 195px;
@@ -109,15 +186,21 @@ a {
 /* Aanpassingen Bootstrap styles. */
 
 /* Iets donkerdere tekst in velden dan standaard. */
+
 input, textarea, select {
-    color: #333;
+    color: #555;
+    width: 300px;
 }
 
-label {
-	float:none;
-	padding-right:5px;
+textarea {
+	height: 300px;
 }
 
+div#update div.delete {
+    background-color: #265A1D;
+    background-image: -moz-linear-gradient(center top , #409932, #265A1D);
+    border-color: #409932 #409932 #307630;
+}
 
 /* Messages tonen zonder bullets en in zwart. */
 div.alert-message ul {
@@ -126,25 +209,30 @@ div.alert-message ul {
     padding: 0;
 }
 
+form#editTreeForm {
+	margin-bottom:0;
+}
+
 div.alert-message li {
     color: inherit;
 }
-.container-fluid > .sidebar {
-	position:relative;
-	float:right;
-}
 
-.container-fluid>.content {
-	margin-right:240px;
-}
+/* alle button grijs, ipv blauw. */
+.btn.primary, button {
+	font-family:	"Lucida Grande",Geneva,Helvetica,Arial,sans-serif;
+	font-size:	13px;
+	font-weight:	400;
+	font-style:	normal;
+	color:	#555555;
+	line-height:	16px;
+	text-align:	center;
+	vertical-align:	baseline;
+	direction: ltr;
+	background-color:#F0F0F0;
+	background-image: none;
 
-input[type="checkbox"], input[type="radio"] {
-	margin: 3px 5px;
 }
-
-/* De primary button oranje, ipv blauw. */
-.btn.primary {
-    background-color: #265a1d;
+	/*
     background-image: -khtml-gradient(linear, left top, left bottom, from(#409932), to(#265a1d));
     background-image: -moz-linear-gradient(top, #409932, #265a1d);
     background-image: -ms-linear-gradient(top, #409932, #265a1d);
@@ -154,7 +242,7 @@ input[type="checkbox"], input[type="radio"] {
     background-image: linear-gradient(top, #409932, #744280);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#409932', endColorstr = '#265a1d', GradientType = 0);
     border-color: #409932 #409932 #307630;
-}
+}*/
 
 
 /* Footer
@@ -162,6 +250,7 @@ input[type="checkbox"], input[type="radio"] {
 .footer {
   background-color: #eee;
   min-width: 940px;
+  min-height: 300px;
   padding: 30px 0;
   text-shadow: 0 1px 0 #fff;
   border-top: 1px solid #e5e5e5;
@@ -205,10 +294,4 @@ input[type="checkbox"], input[type="radio"] {
 /* Tekst verticaal in het midden in alle tabellen. */
 table tbody td {
     vertical-align: middle;
-}
-
-div.submit {
-	padding-top: 0px;
-	text-align: right;
-	margin-right: 50px;
 }
