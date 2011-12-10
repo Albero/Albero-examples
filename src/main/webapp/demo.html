@@ -55,8 +55,28 @@
 			</table>
 
 			<div id="albero">
-				<button id="start-button" class="btn primary">Start!</button>
-			</div>
+				<form id="selection-form">
+					<p>Geef de naam van de boom:</p>
+					<table id="BoomNaamTable">
+					<tr><td><input id="tree" type="text" placeholder="boomnaam" default="demo"/></td></tr>
+				    </table>
+					<p>Geef de rol:</p>
+					<table id="RolNaam">
+					<tr><td><input id="role" type="text" placeholder="rolnaam" default="nl"/></td></tr>
+				    </table>
+				    <p>Geef de informatie die je wil voorvullen:</p>
+				    <table id="SleutelWaardeTable">
+					<tr><td><input name="informationSleutel" type="text" placeholder="Sleutel" /></td>
+					<td><input name="informationWaarde" type="text" placeholder="Waarde" /></td></tr>
+					</table>
+					<p>
+				    <input id="selection-button" type="button" value="Start albero" />
+				    <input id="rijen+-button" type="button" value="Rij+" />
+				    <input id="rijen--button" type="button" value="Rijen--" disabled="true;" />
+				    </p>
+
+				</form>
+			</div>	
 		</div>
 
 		
@@ -80,6 +100,12 @@
 	<script type="text/javascript">
 		var NO_PREVIOUS_NODE_GROUP = {};
 		var previousNodeGroup = NO_PREVIOUS_NODE_GROUP;
+
+		const defaultTreeName = "demo"; //"wmo_iva_routebepaler_aov";
+		document.getElementById('tree').placeholder = defaultTreeName;
+		
+		const defaultRoleName = "nl"; //"en";
+		document.getElementById('role').placeholder = defaultRoleName;
 
 		function clearNavigationAndBreadcrumbs() {
 			nl.profict.albero.Utilities.clear(document
@@ -209,46 +235,100 @@
 			previousNodeGroup = nodeGroup;
 		}
 
-		nl.profict.albero.Utilities.addEventListener(document
-				.getElementById('start-button'), 'click', function() {
-			var albero = new nl.profict.albero.Albero('http://' + location.host
-					+ '/proxy', 'demo', 'nl', 'random', {}, 'albero');
+			function startAlbero(treeName, roleName, information) {
 
-			//			var albero = new nl.profict.albero.Albero('http://' + location.host + '/proxy', 'wmo_intake_aanmeldfilter_voorziening', 'nl', 'random', 
-			//								{voorzieningTypeLabel:'AOV',  voorzieningTypeNaam:'Hulp bij huishouding',  voorzieningTypeUitleen:'Ja', voorzieningTypeCategorie:'leuk'}, 'albero');
-
-			nl.profict.albero.elements.ElementFactories
-					.addDefaultElementFactories(albero);
-			albero.addElementFactory('data list', example.elements.DataList);
-
-			albero.addListener({
-				onForm : function() {
-				},
-
-				onComplete : function() {
-					clearNavigationAndBreadcrumbs();
-
-					updateResults(albero);
-
-					summarise(previousNodeGroup, albero, function() {
-						clearNavigationAndBreadcrumbs();
-
-						document.getElementById('albero').appendChild(
-								document.createTextNode('U bent nu klaar.'));
+				nl.profict.albero.Utilities.addEventListener(document.getElementById('start-button'), 'click', function() {
+					var albero = new nl.profict.albero.Albero('http://' + location.host + '/albero', treeName, roleName, 'random', information, 'albero');
+	
+					nl.profict.albero.elements.ElementFactories.addDefaultElementFactories(albero);
+					albero.addElementFactory('data list', example.elements.DataList);
+	
+					albero.addListener({
+						onForm: function() {},
+	
+						onComplete: function() {
+							clearNavigationAndBreadcrumbs();
+	
+							updateResults(albero);
+	
+							summarise(previousNodeGroup, albero, function() {
+								clearNavigationAndBreadcrumbs();
+	
+								document.getElementById('albero').appendChild(document.createTextNode('U bent nu klaar.'));
+							});
+						}
 					});
+	
+					albero.setFormGuard(formGuard);
+	
+					albero.setTextRenderer(function(text) {
+						var element = document.createElement('div');
+						new Parse.Simple.Creole().parse(element, text);
+						return element.innerHTML.replace(/^<p>(.*)<\/p>$/, '$1');
+					});
+	
+					albero.refresh();
+				});
+			}
+			
+			function buildJson(keys, values) {
+				var json = {};
+				for (var i = keys.length-1; i>=0; i--) {
+					if (keys[i].value != "" && values[i].value != "") {
+						if (!isNaN(parseInt(values[i].value))) {
+							json[keys[i].value] = parseInt(values[i].value);
+						} else {
+							json[keys[i].value] = values[i].value;
+						}
+					}
 				}
+				return json;
+			}
+
+			nl.profict.albero.Utilities.addEventListener(document.getElementById('rijen+-button'), 'click', function() {
+				var body = document.getElementById('SleutelWaardeTable').tBodies[0];
+				var newRow = body.insertRow(-1);
+				var kvList = ['Sleutel', 'Waarde'];
+				for (var i = 0; i<kvList.length; i++) {
+					var newCell = newRow.insertCell(i);
+					var newInput = document.createElement('input');
+					newInput.type = 'text';
+					newInput.name = 'information' + kvList[i];
+					newInput.placeholder = kvList[i];
+					newCell.appendChild(newInput);
+				}
+				document.getElementById('rijen--button').disabled = false;
 			});
-
-			albero.setFormGuard(formGuard);
-
-			albero.setTextRenderer(function(text) {
-				var element = document.createElement('div');
-				new Parse.Simple.Creole().parse(element, text);
-				return element.innerHTML.replace(/^<p>(.*)<\/p>$/, '$1');
+			
+			nl.profict.albero.Utilities.addEventListener(document.getElementById('rijen--button'), 'click', function() {
+				var body = document.getElementById('SleutelWaardeTable').tBodies[0];
+				for (var i=body.rows.length-1; i>=1; i--) {
+					body.deleteRow(i);
+				};
+				document.getElementById('rijen--button').disabled = true;
 			});
+			
+			nl.profict.albero.Utilities.addEventListener(document.getElementById('selection-button'), 'click', function() {
+				var treeName = document.getElementById('tree').value;
+				if (treeName == "") {
+					treeName = defaultTreeName;
+				}
 
-			albero.refresh();
-		});
-	</script>
-</body>
+				var roleName = document.getElementById('role').value;
+				if (roleName == "") {
+					roleName = defaultRoleName;
+				}
+				
+				var informationSleutels = document.getElementsByName('informationSleutel');
+				var informationWaardes = document.getElementsByName('informationWaarde');
+				var information = buildJson(informationSleutels, informationWaardes);
+				
+				document.getElementById('albero').innerHTML = "<button id='start-button' class='btn primary'>Start!</button>";
+				
+				startAlbero(treeName, roleName, information);
+			});
+			
+
+		</script>
+/body>
 </html>
